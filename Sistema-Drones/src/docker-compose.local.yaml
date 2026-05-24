@@ -1,0 +1,78 @@
+version: '3.8'
+
+x-env: &env
+  DASHBOARD_HOST: dashboard
+  MONITOR_FILA_HOST: monitor-fila
+  MONITOR_GLOBAL_HOST: monitor-global
+  VALIDATOR_HOST: validator
+
+services:
+  # --- INFRAESTRUTURA DE MONITORAMENTO ---
+  dashboard:
+    image: enzocaua/frota-drones:latest
+    container_name: dashboard
+    command: java -cp bin Dashboard
+    ports: ["7000:7000"]
+    stdin_open: true
+    tty: true
+
+  monitor-global:
+    image: enzocaua/frota-drones:latest
+    container_name: monitor-global
+    command: java -cp bin Monitor
+    ports: ["6000:6000"]
+    stdin_open: true
+    tty: true
+
+  monitor-fila:
+    image: enzocaua/frota-drones:latest
+    container_name: monitor-fila
+    command: java -cp bin MonitorFila
+    ports: ["6001:6001"]
+    stdin_open: true
+    tty: true
+
+  validator:
+    image: enzocaua/frota-drones:latest
+    container_name: validator
+    command: java -cp bin Validador
+    ports: ["6002:6002"]
+    stdin_open: true
+    tty: true
+
+  # --- BROKERS ---
+  broker1:
+    image: enzocaua/frota-drones:latest
+    environment: *env
+    command: java -cp bin Broker 1 5001 broker2:5002,broker3:5003,broker4:5004 drone1:7001,drone2:7002,drone3:7003,drone4:7004,drone5:7005,drone6:7006,drone7:7007,drone8:7008
+
+  broker2:
+    image: enzocaua/frota-drones:latest
+    environment: *env
+    command: java -cp bin Broker 2 5002 broker1:5001,broker3:5003,broker4:5004 drone1:7001,drone2:7002,drone3:7003,drone4:7004,drone5:7005,drone6:7006,drone7:7007,drone8:7008
+
+  broker3:
+    image: enzocaua/frota-drones:latest
+    environment: *env
+    command: java -cp bin Broker 3 5003 broker1:5001,broker2:5002,broker4:5004 drone1:7001,drone2:7002,drone3:7003,drone4:7004,drone5:7005,drone6:7006,drone7:7007,drone8:7008
+
+  broker4:
+    image: enzocaua/frota-drones:latest
+    environment: *env
+    command: java -cp bin Broker 4 5004 broker1:5001,broker2:5002,broker3:5003 drone1:7001,drone2:7002,drone3:7003,drone4:7004,drone5:7005,drone6:7006,drone7:7007,drone8:7008
+
+  # --- DRONES ---
+  drone1: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 1 7001 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone2: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 2 7002 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone3: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 3 7003 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone4: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 4 7004 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone5: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 5 7005 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone6: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 6 7006 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone7: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 7 7007 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+  drone8: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Drone 8 7008 broker1:5001,broker2:5002,broker3:5003,broker4:5004" }
+
+  # --- SENSORES ---
+  sensor1: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Sensor 5001 1 broker1" }
+  sensor2: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Sensor 5002 2 broker2" }
+  sensor3: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Sensor 5003 3 broker3" }
+  sensor4: { image: enzocaua/frota-drones:latest, environment: *env, command: "java -cp bin Sensor 5004 4 broker4" }
